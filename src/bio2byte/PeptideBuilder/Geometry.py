@@ -507,7 +507,7 @@ class LysGeo(Geo):
 class AspGeo(Geo):
     """Geometry of Aspartic Acid"""
 
-    def __init__(self):
+    def __init__(self, resn: str = "ASP"):
         self.CA_N_length = 1.46
         self.CA_C_length = 1.52
         self.N_CA_C_angle = 111.03
@@ -539,7 +539,7 @@ class AspGeo(Geo):
         self.CB_CG_OD2_angle = 118.218
         self.CA_CB_CG_OD2_diangle = 180 + self.CA_CB_CG_OD1_diangle
 
-        self.residue_name = "D"
+        self.residue_name = resn
 
     def inputRotamers(self, rotamers: List[float]) -> None:
         try:
@@ -611,7 +611,7 @@ class AsnGeo(Geo):
 class GluGeo(Geo):
     """Geometry of Glutamic Acid"""
 
-    def __init__(self):
+    def __init__(self, resn: str = "GLU"):
         self.CA_N_length = 1.46
         self.CA_C_length = 1.52
         self.N_CA_C_angle = 111.1703
@@ -647,7 +647,7 @@ class GluGeo(Geo):
         self.CG_CD_OE2_angle = 118.08
         self.CB_CG_CD_OE2_diangle = 180.0 + self.CB_CG_CD_OE1_diangle
 
-        self.residue_name = "E"
+        self.residue_name = resn
 
     def inputRotamers(self, rotamers: List[float]) -> None:
         try:
@@ -797,7 +797,7 @@ class MetGeo(Geo):
 class HisGeo(Geo):
     """Geometry of Histidine"""
 
-    def __init__(self):
+    def __init__(self, resn:str = "HIS"):
         self.CA_N_length = 1.46
         self.CA_C_length = 1.52
         self.N_CA_C_angle = 111.0859
@@ -837,7 +837,7 @@ class HisGeo(Geo):
         self.CG_CD2_NE2_angle = 108.5
         self.CB_CG_CD2_NE2_diangle = 180.0
 
-        self.residue_name = "H"
+        self.residue_name = resn
 
     def inputRotamers(self, rotamers: List[float]) -> None:
         try:
@@ -1096,50 +1096,274 @@ class TrpGeo(Geo):
             self.CA_CB_CG_CD2_diangle = self.CA_CB_CG_CD1_diangle - 180.0
 
 
+#
+# ::: Capping Groups - Geometries (with dummy atoms ;-))
+#
+class ACEGeo(Geo):
+    """
+    Geometry of N-terminal Acetyl:
+    taken from ff19SB, dummy atom (N) angles are from glycin
+    """
+
+    def __init__(self):
+        self.CA_N_length = 1.0          # Note: N serves as a dummy atom here
+        self.CA_C_length = 1.53
+        self.N_CA_C_angle = 110.8914
+
+        self.C_O_length = 1.229
+        self.CA_C_O_angle = 120.5
+        self.N_CA_C_O_diangle = 180.0
+
+        self.phi = -120
+        self.psi_im1 = 140
+        self.omega = 180.0
+        self.peptide_bond = 1.33
+        self.CA_C_N_angle = 116.642992978143
+        self.C_N_CA_angle = 121.382215820277
+
+        self.residue_name = "Ace"
+
+
+class NMEGeo(Geo):
+    """
+    Geometry of C-terminal N-methyl group 
+    """
+
+    def __init__(self):
+        self.CA_N_length = 1.46
+        self.CA_C_length = 1.52
+        self.N_CA_C_angle = 110.8914
+
+        self.C_O_length = 1.23
+        self.CA_C_O_angle = 120.5117
+        self.N_CA_C_O_diangle = 180.0
+
+        self.phi = -120
+        self.psi_im1 = 140
+        self.omega = 180.0
+        self.peptide_bond = 1.33
+        self.CA_C_N_angle = 116.642992978143
+        self.C_N_CA_angle = 121.382215820277
+
+        self.residue_name = "NME"
+
+
+#
+# ::: Modified amino acids - Geometries
+#
+class SEPGeo(Geo):
+    """Geometry of Phosphoserine (SEP) and Phosphoserine-H (S1P) """
+
+    def __init__(self, resn: str = "SEP"):
+        self.CA_N_length = 1.454
+        self.CA_C_length = 1.525
+        self.N_CA_C_angle = 113.817
+
+        self.C_O_length = 1.201
+        self.CA_C_O_angle = 120.874
+        self.N_CA_C_O_diangle = 55.873
+
+        self.phi = -120
+        self.psi_im1 = 140
+        self.omega = 180.0
+        self.peptide_bond = 1.33
+        self.CA_C_N_angle = 116.642992978143
+        self.C_N_CA_angle = 121.382215820277
+
+        self.CA_CB_length = 1.535
+        self.C_CA_CB_angle = 110.250
+        self.N_C_CA_CB_diangle = 122.6618
+
+        self.CB_OG_length = 1.393
+        self.CA_CB_OG_angle = 106.851
+        self.N_CA_CB_OG_diangle = -139.291
+        
+        self.OG_P_length = 1.658
+        self.CB_OG_P_angle = 117.252
+        self.CA_CB_OG_P_diangle = 98.393
+        
+        self.P_O1P_length = 1.510
+        self.OG_P_O1P_angle = 102.0
+        self.CB_OG_P_O1P_diangle = 93.852
+        
+        self.P_O2P_length = 1.510
+        self.OG_P_O2P_angle = 102.0
+        self.CB_OG_P_O2P_diangle = -146.050
+        
+        self.P_O3P_length = 1.510
+        self.OG_P_O3P_angle = 102.0
+        self.CB_OG_P_O3P_diangle = -26.972
+        
+        self.residue_name = resn
+
+
+class TPOGeo(Geo):
+    """Geometry of Phosphothreonine (TPO)
+        and Phosphothreonine-H (T1P) """
+
+    def __init__(self, resn: str = "TPO"):
+        self.CA_N_length = 1.46
+        self.CA_C_length = 1.52
+        self.N_CA_C_angle = 110.7014
+
+        self.C_O_length = 1.23
+        self.CA_C_O_angle = 120.5359
+        self.N_CA_C_O_diangle = 120.0
+
+        self.phi = -120
+        self.psi_im1 = 140
+        self.omega = 180.0
+        self.peptide_bond = 1.33
+        self.CA_C_N_angle = 116.642992978143
+        self.C_N_CA_angle = 121.382215820277
+
+        self.CA_CB_length = 1.52
+        self.C_CA_CB_angle = 109.5
+        self.N_C_CA_CB_diangle = 123.0953
+
+        self.CB_OG1_length = 1.43
+        self.CA_CB_OG1_angle = 109.18
+        self.N_CA_CB_OG1_diangle = -139.3
+
+        self.CB_CG2_length = 1.53
+        self.CA_CB_CG2_angle = 111.13
+        self.N_CA_CB_CG2_diangle = 100.4
+        
+        self.OG1_P_length = 1.659
+        self.CB_OG1_P_angle = 112.272
+        self.CA_CB_OG1_P_diangle = 98.393
+        
+        self.P_O1P_length = 1.51
+        self.OG1_P_O1P_angle = 102.
+        self.CB_OG1_P_O1P_diangle = -30.8
+        
+        self.P_O2P_length = 1.51
+        self.OG1_P_O2P_angle = 102.
+        self.CB_OG1_P_O2P_diangle = 90.4
+        
+        self.P_O3P_length = 1.51
+        self.OG1_P_O3P_angle = 102.
+        self.CB_OG1_P_O3P_diangle = -148.1
+
+        self.residue_name = resn
+
+
+class PTRGeo(Geo):
+    """Geometry of Phosphotyrosine (PTR and Y1P)"""
+
+    def __init__(self, resn: str = "PTR"):
+        self.CA_N_length = 1.46
+        self.CA_C_length = 1.52
+        self.N_CA_C_angle = 110.9288
+
+        self.C_O_length = 1.23
+        self.CA_C_O_angle = 120.5434
+        self.N_CA_C_O_diangle = 120.0
+
+        self.phi = -120
+        self.psi_im1 = 140
+        self.omega = 180.0
+        self.peptide_bond = 1.33
+        self.CA_C_N_angle = 116.642992978143
+        self.C_N_CA_angle = 121.382215820277
+
+        self.CA_CB_length = 1.52
+        self.C_CA_CB_angle = 109.5
+        self.N_C_CA_CB_diangle = 122.6023
+
+        self.CB_CG_length = 1.51
+        self.CA_CB_CG_angle = 113.8
+        self.N_CA_CB_CG_diangle = -64.3
+
+        self.CG_CD1_length = 1.39
+        self.CB_CG_CD1_angle = 120.98
+        self.CA_CB_CG_CD1_diangle = 93.1
+
+        self.CG_CD2_length = 1.39
+        self.CB_CG_CD2_angle = 120.82
+        self.CA_CB_CG_CD2_diangle = self.CA_CB_CG_CD1_diangle - 180.
+
+        self.CD1_CE1_length = 1.39
+        self.CG_CD1_CE1_angle = 120.0
+        self.CB_CG_CD1_CE1_diangle = 180.0
+
+        self.CD2_CE2_length = 1.39
+        self.CG_CD2_CE2_angle = 120.0
+        self.CB_CG_CD2_CE2_diangle = 180.0
+
+        self.CE1_CZ_length = 1.39
+        self.CD1_CE1_CZ_angle = 120.0
+        self.CG_CD1_CE1_CZ_diangle = 0.0
+
+        self.CZ_OG_length = 1.39
+        self.CE1_CZ_OG_angle = 119.78
+        self.CD1_CE1_CZ_OG_diangle = 180.0
+
+        self.OG_P_length = 1.68
+        self.CZ_OG_P_angle = 121.3
+        self.CE1_CZ_OG_P_diangle = -154.8
+
+        self.P_O1P_length = 1.51
+        self.OG_P_O1P_angle = 105.
+        self.CZ_OG_P_O1P_diangle = 92.9
+
+        self.P_O2P_length = 1.51
+        self.OG_P_O2P_angle = 105.
+        self.CZ_OG_P_O2P_diangle = -17.9
+
+        self.P_O3P_length = 1.51
+        self.OG_P_O3P_angle = 105.
+        self.CZ_OG_P_O3P_diangle = -153.6
+
+        self.residue_name = resn
+
+
 def geometry(AA: str) -> Geo:
     """Generates the geometry of the requested amino acid.
     The amino acid needs to be specified by its single-letter
     code. If an invalid code is specified, the function
     returns the geometry of Glycine."""
-    if AA == "G":
-        return GlyGeo()
-    elif AA == "A":
-        return AlaGeo()
-    elif AA == "S":
-        return SerGeo()
-    elif AA == "C":
-        return CysGeo()
-    elif AA == "V":
-        return ValGeo()
-    elif AA == "I":
-        return IleGeo()
-    elif AA == "L":
-        return LeuGeo()
-    elif AA == "T":
-        return ThrGeo()
-    elif AA == "R":
-        return ArgGeo()
-    elif AA == "K":
-        return LysGeo()
-    elif AA == "D":
-        return AspGeo()
-    elif AA == "E":
-        return GluGeo()
-    elif AA == "N":
-        return AsnGeo()
-    elif AA == "Q":
-        return GlnGeo()
-    elif AA == "M":
-        return MetGeo()
-    elif AA == "H":
-        return HisGeo()
-    elif AA == "P":
-        return ProGeo()
-    elif AA == "F":
-        return PheGeo()
-    elif AA == "Y":
-        return TyrGeo()
-    elif AA == "W":
-        return TrpGeo()
-    else:
-        return GlyGeo()
+
+    geo_dict = dict(
+        GLY = GlyGeo(), G = GlyGeo(),
+        ALA = AlaGeo(), A = AlaGeo(),
+        SER = SerGeo(), S = SerGeo(),
+        CYS = CysGeo(), C = CysGeo(),
+        VAL = ValGeo(), V = ValGeo(),
+        ILE = IleGeo(), I = IleGeo(),
+        LEU = LeuGeo(), L = LeuGeo(),
+        THR = ThrGeo(), T = ThrGeo(),
+        ARG = ArgGeo(), R = ArgGeo(),
+        LYS = LysGeo(), K = LysGeo(),
+        ASP = AspGeo(), D = AspGeo(),
+        GLU = GluGeo(), E = GluGeo(),
+        ASN = AsnGeo(), N = AsnGeo(),
+        GLN = GlnGeo(), Q = GlnGeo(),
+        MET = MetGeo(), M = MetGeo(),
+        HIS = HisGeo(), H = HisGeo(),
+        PRO = ProGeo(), P = ProGeo(),
+        PHE = PheGeo(), F = PheGeo(),
+        TYR = TyrGeo(), Y = TyrGeo(),
+        TRP = TrpGeo(), W = TrpGeo(),
+        
+        HIP = HisGeo("HIP"),
+        ASH = AspGeo("ASH"),
+        GLH = GluGeo("GLH"),
+        
+        SEP = SEPGeo("SEP"), 
+        S1P = SEPGeo("S1P"),
+        TPO = TPOGeo("TPO"),
+        T1P = TPOGeo("T1P"),
+        PTR = PTRGeo("PTR"),
+        Y1P = PTRGeo("Y1P"),
+    )
+    # Capping groups not included here to avoid building nonsense
+    #   ACE = ACEGeo()
+    #   NME = NMEGeo()
+
+    AA = AA.upper()
+
+    try:
+        return geo_dict[AA]
+    except KeyError:
+        raise KeyError("Unknown residue: %s" % AA)
