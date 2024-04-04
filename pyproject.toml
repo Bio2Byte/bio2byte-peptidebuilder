@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bio2byte.PeptideBuilder"
+dynamic = ["version"]
+description = "Create peptide PDB files with specified geometry"
+readme = {file = "README.md", content-type = "text/markdown"}
+license = {text = "MIT License"}
+authors = [
+    {name = "Matthew Z. Tien", email = "Matthew.Tien89@gmail.com"},
+]
+maintainers = [
+    {name = "David Bickel", email = "david.bickel@vub.be"},
+]
+dependencies = [
+    "Biopython"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Intended Audience :: Science/Research",
+]
+
+[project.urls]
+Homepage = "https://www.bio2byte.be"
+Repository = "https://github.com/Bio2Byte/bio2byte-peptidebuilder"
+"Source Repository" = "https://github.com/clauswilke/PeptideBuilder"
+
+[tool.setuptools.dynamic]
+version = {attr = "bio2byte.PeptideBuilder.__init__.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = true
