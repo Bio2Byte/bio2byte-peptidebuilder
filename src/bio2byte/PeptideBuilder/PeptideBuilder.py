@@ -25,28 +25,12 @@ from Bio.PDB.vectors import Vector, rotaxis, calc_dihedral, calc_angle
 import numpy as np
 
 from .Geometry import (
-    AlaGeo,
-    ArgGeo,
-    AsnGeo,
-    AspGeo,
-    CysGeo,
-    GlnGeo,
-    GluGeo,
-    GlyGeo,
-    HisGeo,
-    IleGeo,
-    LeuGeo,
-    LysGeo,
-    MetGeo,
-    PheGeo,
-    ProGeo,
-    SerGeo,
-    ThrGeo,
-    TrpGeo,
-    TyrGeo,
-    ValGeo,
-    geometry,
-    Geo,
+    AlaGeo, ArgGeo, AsnGeo, AspGeo, CysGeo,
+    GlnGeo, GluGeo, GlyGeo, HisGeo, IleGeo,
+    LeuGeo, LysGeo, MetGeo, PheGeo, ProGeo,
+    SerGeo, ThrGeo, TrpGeo, TyrGeo, ValGeo,
+    SEPGeo, TPOGeo, PTRGeo, ACEGeo, NMEGeo,
+    geometry, Geo,
 )
 
 
@@ -575,7 +559,7 @@ def makeAsp(segID: int, N, CA, C, O, geo: AspGeo) -> Residue:
     )
     OD2 = Atom("OD2", oxygen_d2, 0.0, 1.0, " ", " OD2", 0, "O")
 
-    res = Residue((" ", segID, " "), "ASP", "    ")
+    res = Residue((" ", segID, " "), geo.residue_name, "    ")
     res.add(N)
     res.add(CA)
     res.add(C)
@@ -679,7 +663,7 @@ def makeGlu(segID: int, N, CA, C, O, geo: GluGeo) -> Residue:
     )
     OE2 = Atom("OE2", oxygen_e2, 0.0, 1.0, " ", " OE2", 0, "O")
 
-    res = Residue((" ", segID, " "), "GLU", "    ")
+    res = Residue((" ", segID, " "), geo.residue_name, "    ")
 
     res.add(N)
     res.add(CA)
@@ -852,7 +836,7 @@ def makeHis(segID: int, N, CA, C, O, geo: HisGeo) -> Residue:
     )
     NE2 = Atom("NE2", nitrogen_e2, 0.0, 1.0, " ", " NE2", 0, "N")
 
-    res = Residue((" ", segID, " "), "HIS", "    ")
+    res = Residue((" ", segID, " "), geo.residue_name, "    ")
     res.add(N)
     res.add(CA)
     res.add(C)
@@ -1175,7 +1159,302 @@ def makeTrp(segID: int, N, CA, C, O, geo: TrpGeo) -> Residue:
     res.add(CH2)
     return res
 
+#
+# ::: Capping groups - Make funktions
+#
+def makeACE(segID: int, CA, C, O, geo: Geo) -> Residue:
+    """Creates a N-terminal Acetyl residue"""
+    res = Residue((" ", segID, " "), "ACE", "    ")
 
+    res.add(CA)
+    res.add(C)
+    res.add(O)
+    return res
+    
+    
+def makeNME(segID: int, N, CT) -> Residue:
+    """Creates a C-terminal N-metyl residue"""
+    res = Residue((" ", segID, " "), "NME", "    ")
+
+    res.add(N)
+    res.add(CT)
+    return res
+
+def makeNH2(segID: int, N) -> Residue:
+    """Creates a C-terminal N-metyl residue"""
+    res = Residue((" ", segID, " "), "NHE", "    ")
+
+    res.add(N)
+    return res
+
+
+#
+# ::: Modified amino acids - Make funcions
+#
+def makeSEP(segID: int, N, CA, C, O, geo: SEPGeo) -> Residue:
+    """Creates a Serine residue"""
+    # Build CB
+    CA_CB_length = geo.CA_CB_length
+    C_CA_CB_angle = geo.C_CA_CB_angle
+    N_C_CA_CB_diangle = geo.N_C_CA_CB_diangle
+    coords_CB = calculateCoordinates(
+        N, C, CA, CA_CB_length, C_CA_CB_angle, N_C_CA_CB_diangle)
+    CB =  Atom("CB", coords_CB, 0.0, 1.0, " ", " CB", 0, "C")
+    
+    # Build OG
+    CB_OG_length = geo.CB_OG_length
+    CA_CB_OG_angle = geo.CA_CB_OG_angle
+    N_CA_CB_OG_diangle = geo.N_CA_CB_OG_diangle
+    coords_OG = calculateCoordinates(
+        N, CA, CB, CB_OG_length, CA_CB_OG_angle, N_CA_CB_OG_diangle)
+    OG = Atom("OG", coords_OG, 0.0, 1.0, " ", " OG", 0, "O")
+    
+    # Build P
+    OG_P_length = geo.OG_P_length
+    CB_OG_P_angle = geo.CB_OG_P_angle
+    CA_CB_OG_P_diangle = geo.CA_CB_OG_P_diangle
+    coords_P = calculateCoordinates(
+        CA, CB, OG, OG_P_length, CB_OG_P_angle, CA_CB_OG_P_diangle)
+    P = Atom("P", coords_P, 0.0, 1.0, " ", " P ", 0, "P")
+    
+    # Build O1P
+    P_O1P_length = geo.P_O1P_length
+    OG_P_O1P_angle = geo.OG_P_O1P_angle
+    CB_OG_P_O1P_diangle = geo.CB_OG_P_O1P_diangle
+    coords_O1P = calculateCoordinates(
+        CB, OG, P, P_O1P_length, OG_P_O1P_angle, CB_OG_P_O1P_diangle)
+    O1P = Atom("O1P", coords_O1P, 0.0, 1.0, " ", "O1P", 0, "O")
+    
+    # Build O2P
+    P_O2P_length = geo.P_O2P_length
+    OG_P_O2P_angle = geo.OG_P_O2P_angle
+    CB_OG_P_O2P_diangle = geo.CB_OG_P_O2P_diangle
+    coords_O2P = calculateCoordinates(
+        CB, OG, P, P_O2P_length, OG_P_O2P_angle, CB_OG_P_O2P_diangle)
+    O2P = Atom("O2P", coords_O2P, 0.0, 1.0, " ", "O2P", 0, "O")
+    
+    # Build O3P
+    P_O3P_length = geo.P_O3P_length
+    OG_P_O3P_angle = geo.OG_P_O3P_angle
+    CB_OG_P_O3P_diangle = geo.CB_OG_P_O3P_diangle
+    coords_O3P = calculateCoordinates(
+        CB, OG, P, P_O3P_length, OG_P_O3P_angle, CB_OG_P_O3P_diangle)
+    O3P = Atom("O3P", coords_O3P, 0.0, 1.0, " ", "O3P", 0, "O")
+
+    ##Create Reside Data Structure
+    res = Residue((" ", segID, " "), geo.residue_name, "    ")
+    res.add(N)
+    res.add(CA)
+    res.add(C)
+    res.add(O)
+    res.add(CB)
+    res.add(OG)
+    res.add(P)
+    res.add(O1P)
+    res.add(O2P)
+    res.add(O3P)
+    return res
+
+
+def makeTPO(segID: int, N, CA, C, O, geo: TPOGeo) -> Residue:
+    """Creates a Phosphothreonine residue"""
+    # Build CB
+    CA_CB_length = geo.CA_CB_length
+    C_CA_CB_angle = geo.C_CA_CB_angle
+    N_C_CA_CB_diangle = geo.N_C_CA_CB_diangle
+    coords_CB = calculateCoordinates(
+        N, C, CA, CA_CB_length, C_CA_CB_angle, N_C_CA_CB_diangle)
+    CB =  Atom("CB", coords_CB, 0.0, 1.0, " ", " CB", 0, "C")
+
+    # Build CG2
+    CB_CG2_length = geo.CB_CG2_length
+    CA_CB_CG2_angle = geo.CA_CB_CG2_angle
+    N_CA_CB_CG2_diangle = geo.N_CA_CB_CG2_diangle
+    coords_CG2 = calculateCoordinates(
+        N, CA, CB, CB_CG2_length, CA_CB_CG2_angle, N_CA_CB_CG2_diangle)
+    CG2 = Atom("CG2", coords_CG2, 0.0, 1.0, " ", "CG2", 0, "C")
+    
+    # Build OG1
+    CB_OG1_length = geo.CB_OG1_length
+    CA_CB_OG1_angle = geo.CA_CB_OG1_angle
+    N_CA_CB_OG1_diangle = geo.N_CA_CB_OG1_diangle
+    coords_OG1 = calculateCoordinates(
+        N, CA, CB, CB_OG1_length, CA_CB_OG1_angle, N_CA_CB_OG1_diangle)
+    OG1 = Atom("OG1", coords_OG1, 0.0, 1.0, " ", "OG1", 0, "O")
+    
+    # Build P
+    OG1_P_length = geo.OG1_P_length
+    CB_OG1_P_angle = geo.CB_OG1_P_angle
+    CA_CB_OG1_P_diangle = geo.CA_CB_OG1_P_diangle
+    coords_P = calculateCoordinates(
+        CA, CB, OG1, OG1_P_length, CB_OG1_P_angle, CA_CB_OG1_P_diangle)
+    P = Atom("P", coords_P, 0.0, 1.0, " ", " P ", 0, "P")
+    
+    # Build O1P
+    P_O1P_length = geo.P_O1P_length
+    OG1_P_O1P_angle = geo.OG1_P_O1P_angle
+    CB_OG1_P_O1P_diangle = geo.CB_OG1_P_O1P_diangle
+    coords_O1P = calculateCoordinates(
+        CB, OG1, P, P_O1P_length, OG1_P_O1P_angle, CB_OG1_P_O1P_diangle)
+    O1P = Atom("O1P", coords_O1P, 0.0, 1.0, " ", "O1P", 0, "O")
+    
+    # Build O2P
+    P_O2P_length = geo.P_O2P_length
+    OG1_P_O2P_angle = geo.OG1_P_O2P_angle
+    CB_OG1_P_O2P_diangle = geo.CB_OG1_P_O2P_diangle
+    coords_O2P = calculateCoordinates(
+        CB, OG1, P, P_O2P_length, OG1_P_O2P_angle, CB_OG1_P_O2P_diangle)
+    O2P = Atom("O2P", coords_O2P, 0.0, 1.0, " ", "O2P", 0, "O")
+    
+    # Build O3P
+    P_O3P_length = geo.P_O3P_length
+    OG1_P_O3P_angle = geo.OG1_P_O3P_angle
+    CB_OG1_P_O3P_diangle = geo.CB_OG1_P_O3P_diangle
+    coords_O3P = calculateCoordinates(
+        CB, OG1, P, P_O3P_length, OG1_P_O3P_angle, CB_OG1_P_O3P_diangle)
+    O3P = Atom("O3P", coords_O3P, 0.0, 1.0, " ", "O3P", 0, "O")
+
+    ##Create Reside Data Structure
+    res = Residue((" ", segID, " "), geo.residue_name, "    ")
+    res.add(N)
+    res.add(CA)
+    res.add(CB)
+    res.add(CG2)
+    res.add(OG1)
+    res.add(P)
+    res.add(O1P)
+    res.add(O2P)
+    res.add(O3P)
+    res.add(C)
+    res.add(O)
+    return res
+
+
+def makePTR(segID: int, N, CA, C, O, geo: PTRGeo) -> Residue:
+    """Creates a Tyrosine residue"""
+    # Build CB
+    CA_CB_length = geo.CA_CB_length
+    C_CA_CB_angle = geo.C_CA_CB_angle
+    N_C_CA_CB_diangle = geo.N_C_CA_CB_diangle
+    coords_CB = calculateCoordinates(
+        N, C, CA, CA_CB_length, C_CA_CB_angle, N_C_CA_CB_diangle)
+    CB =  Atom("CB", coords_CB, 0.0, 1.0, " ", " CB", 0, "C")
+
+    # Build CG
+    CB_CG_length = geo.CB_CG_length
+    CA_CB_CG_angle = geo.CA_CB_CG_angle
+    N_CA_CB_CG_diangle = geo.N_CA_CB_CG_diangle
+    coords_CG = calculateCoordinates(
+        C, CA, CB, CB_CG_length, CA_CB_CG_angle, N_CA_CB_CG_diangle)
+    CG =  Atom("CG", coords_CG, 0.0, 1.0, " ", " CG", 0, "C")
+
+    # Build CD1
+    CG_CD1_length = geo.CG_CD1_length
+    CB_CG_CD1_angle = geo.CB_CG_CD1_angle
+    CA_CB_CG_CD1_diangle = geo.CA_CB_CG_CD1_diangle
+    coords_CD1 = calculateCoordinates(
+       CA, CB, CG, CG_CD1_length, CB_CG_CD1_angle, CA_CB_CG_CD1_diangle)
+    CD1 =  Atom("CD1", coords_CD1, 0.0, 1.0, " ", "CD1", 0, "C")
+
+    # Build CE1
+    CD1_CE1_length = geo.CD1_CE1_length
+    CG_CD1_CE1_angle = geo.CG_CD1_CE1_angle
+    CB_CG_CD1_CE1_diangle = geo.CB_CG_CD1_CE1_diangle
+    coords_CE1 = calculateCoordinates(
+         CB, CG, CD1, CD1_CE1_length, CG_CD1_CE1_angle, CB_CG_CD1_CE1_diangle)
+    CE1 =  Atom("CE1", coords_CE1, 0.0, 1.0, " ", "CE1", 0, "C")
+
+    # Build CD2
+    CG_CD2_length = geo.CG_CD2_length
+    CB_CG_CD2_angle = geo.CB_CG_CD2_angle
+    CA_CB_CG_CD2_diangle = geo.CA_CB_CG_CD2_diangle
+    coords_CD2 = calculateCoordinates(
+        CA, CB, CG, CG_CD2_length, CB_CG_CD2_angle, CA_CB_CG_CD2_diangle)
+    CD2 =  Atom("CD2", coords_CD2, 0.0, 1.0, " ", "CD2", 0, "C")
+
+    # Build CE2
+    CD2_CE2_length = geo.CD2_CE2_length
+    CG_CD2_CE2_angle = geo.CG_CD2_CE2_angle
+    CB_CG_CD2_CE2_diangle = geo.CB_CG_CD2_CE2_diangle
+    coords_CE2 = calculateCoordinates(
+         CB, CG, CD2, CD2_CE2_length, CG_CD2_CE2_angle, CB_CG_CD2_CE2_diangle)
+    CE2 =  Atom("CE2", coords_CE2, 0.0, 1.0, " ", "CE2", 0, "C")
+
+    # Build CZ
+    CE1_CZ_length = geo.CE1_CZ_length
+    CD1_CE1_CZ_angle = geo.CD1_CE1_CZ_angle
+    CG_CD1_CE1_CZ_diangle = geo.CG_CD1_CE1_CZ_diangle
+    coords_CZ = calculateCoordinates(
+         CG, CD1, CE1, CE1_CZ_length, CD1_CE1_CZ_angle, CG_CD1_CE1_CZ_diangle)
+    CZ =  Atom("CZ", coords_CZ, 0.0, 1.0, " ", " CZ", 0, "C")
+
+    # Build OG / OH
+    CZ_OG_length = geo.CZ_OG_length
+    CE1_CZ_OG_angle = geo.CE1_CZ_OG_angle
+    CD1_CE1_CZ_OG_diangle = geo.CD1_CE1_CZ_OG_diangle
+    coords_OG = calculateCoordinates(
+        CD1, CE1, CZ, CZ_OG_length, CE1_CZ_OG_angle, CD1_CE1_CZ_OG_diangle)
+    # Why Amber, why?
+    if geo.residue_name == "Y1P":
+        OG = Atom("OG", coords_OG, 0.0, 1.0, " ", " OG", 0, "O")
+    else:
+        OG = Atom("OH", coords_OG, 0.0, 1.0, " ", " OH", 0, "O")
+
+    # Build P
+    OG_P_length = geo.OG_P_length
+    CZ_OG_P_angle = geo.CZ_OG_P_angle
+    CE1_CZ_OG_P_diangle = geo.CE1_CZ_OG_P_diangle
+    coords_P = calculateCoordinates(
+        CE1, CZ, OG, OG_P_length, CZ_OG_P_angle, CE1_CZ_OG_P_diangle)
+    P = Atom("P", coords_P, 0.0, 1.0, " ", " P ", 0, "P")
+
+    # Build O1P
+    P_O1P_length = geo.P_O1P_length
+    OG_P_O1P_angle = geo.OG_P_O1P_angle
+    CZ_OG_P_O1P_diangle = geo.CZ_OG_P_O1P_diangle
+    coords_O1P = calculateCoordinates(
+        CZ, OG, P, P_O1P_length, OG_P_O1P_angle, CZ_OG_P_O1P_diangle)
+    O1P = Atom("O1P", coords_O1P, 0.0, 1.0, " ", "O1P", 0, "O")
+
+    # Build O2P
+    P_O2P_length = geo.P_O2P_length
+    OG_P_O2P_angle = geo.OG_P_O2P_angle
+    CZ_OG_P_O2P_diangle = geo.CZ_OG_P_O2P_diangle
+    coords_O2P = calculateCoordinates(
+        CZ, OG, P, P_O2P_length, OG_P_O2P_angle, CZ_OG_P_O2P_diangle)
+    O2P = Atom("O2P", coords_O2P, 0.0, 1.0, " ", "O2P", 0, "O")
+
+    # Build O3P
+    P_O3P_length = geo.P_O3P_length
+    OG_P_O3P_angle = geo.OG_P_O3P_angle
+    CZ_OG_P_O3P_diangle = geo.CZ_OG_P_O3P_diangle
+    coords_O3P = calculateCoordinates(
+        CZ, OG, P, P_O3P_length, OG_P_O3P_angle, CZ_OG_P_O3P_diangle)
+    O3P = Atom("O3P", coords_O3P, 0.0, 1.0, " ", "O3P", 0, "O")
+
+    ##Create Residue Data S
+    res = Residue((" ", segID, " "), geo.residue_name, "    ")
+    res.add(N)
+    res.add(CA)
+    res.add(CB)
+    res.add(CG)
+    res.add(CD1)
+    res.add(CE1)
+    res.add(CD2)
+    res.add(CE2)
+    res.add(CZ)
+    res.add(OG)
+    res.add(P)
+    res.add(O1P)
+    res.add(O2P)
+    res.add(O3P)
+    res.add(C)
+    res.add(O)
+    return res
+
+
+# ::: Build functions
+#
 def make_res_of_type(segID: int, N, CA, C, O, geo: Geo) -> Residue:
     if isinstance(geo, GlyGeo):
         res = makeGly(segID, N, CA, C, O, geo)
@@ -1217,6 +1496,12 @@ def make_res_of_type(segID: int, N, CA, C, O, geo: Geo) -> Residue:
         res = makeTyr(segID, N, CA, C, O, geo)
     elif isinstance(geo, TrpGeo):
         res = makeTrp(segID, N, CA, C, O, geo)
+    elif isinstance(geo, SEPGeo):
+        res = makeSEP(segID, N, CA, C, O, geo)
+    elif isinstance(geo, TPOGeo):
+        res = makeTPO(segID, N, CA, C, O, geo)
+    elif isinstance(geo, PTRGeo):
+        res = makePTR(segID, N, CA, C, O, geo)
     else:
         res = makeGly(segID, N, CA, C, O, geo)
 
@@ -1279,6 +1564,52 @@ def initialize_res(residue: Union[Geo, str]) -> Structure:
     return struc
 
 
+def initialize_ACE() -> Structure:
+    """Creates a new structure containing a single Acetyl N-terminal capping
+    group. The residue will be placed into chain A of model 0."""
+
+    geo = ACEGeo()
+
+    segID = 1
+    AA = geo.residue_name
+    CA_N_length = geo.CA_N_length
+    CA_C_length = geo.CA_C_length
+    N_CA_C_angle = geo.N_CA_C_angle
+
+    CA_coord = np.array([0.0, 0.0, 0.0])
+    C_coord = np.array([CA_C_length, 0, 0])
+    N_coord = np.array([
+            CA_N_length * math.cos(N_CA_C_angle * (math.pi / 180.0)),
+            CA_N_length * math.sin(N_CA_C_angle * (math.pi / 180.0)),
+            0])
+
+    N =  Atom("N", N_coord, 0.0, 1.0, " ", " N", 0, "N")
+    CA = Atom("CH3", CA_coord, 0.0, 1.0, " ", "CH3", 0, "C")
+    C =  Atom("C", C_coord, 0.0, 1.0, " ", " C", 0, "C")
+
+    # Create Carbonyl O-atom (to be moved later)
+    C_O_length = geo.C_O_length
+    CA_C_O_angle = geo.CA_C_O_angle
+    N_CA_C_O_diangle = geo.N_CA_C_O_diangle
+
+    O_coord = calculateCoordinates(
+        N, CA, C, C_O_length, CA_C_O_angle, N_CA_C_O_diangle
+    )
+    O = Atom("O", O_coord, 0.0, 1.0, " ", " O", 0, "O")
+
+    res = makeACE(segID, CA, C, O, geo)
+
+    cha = Chain("A")
+    cha.add(res)
+
+    mod = Model(0)
+    mod.add(cha)
+
+    struc = Structure("X")
+    struc.add(mod)
+    return struc
+
+
 def getReferenceResidue(structure: Structure) -> Residue:
     """Returns the last residue of chain A model 0 of the given structure.
 
@@ -1288,13 +1619,44 @@ def getReferenceResidue(structure: Structure) -> Residue:
     # If the following line doesn't work we're in trouble.
     # Likely initialize_res() wasn't called.
     resRef = structure[0]["A"].child_list[-1]
+    resn = resRef.get_resname().upper()
 
     # If the residue is not an amino acid we're in trouble.
     # Likely somebody is trying to append residues to an existing
     # structure that has non-amino-acid molecules in the chain.
-    assert is_aa(resRef)
+    if is_aa(resRef):
+        refAtoms = {"N":  resRef["N"],
+                    "CA": resRef["CA"],
+                    "C":  resRef["C"],
+                    "O":  resRef["O"]}
+    # Modified residues are not always recognized
+    elif resn in ["SEP", "S1P", "TPO", "T1P", "PTR", "Y1P", "ASH", "GLH", "HIP"]:
+        refAtoms = {"N":  resRef["N"],
+                    "CA": resRef["CA"],
+                    "C":  resRef["C"],
+                    "O":  resRef["O"]}
+    # Handle C-terminal capping groups
+    elif resn == "ACE":
+        geo = ACEGeo()
+        CA_N_length = geo.CA_N_length
+        N_CA_C_angle = geo.N_CA_C_angle
+        N_CA_C_O_diangle = geo.N_CA_C_O_diangle
 
-    return resRef
+        C = resRef["C"]
+        O = resRef["O"]
+        ca_coord = resRef["CH3"].get_coord()
+        CA = Atom("CA", ca_coord, 0.0, 0.0, " ", "CA", 0, "C")
+        n_coord = calculateCoordinates(
+            O,C,CA, CA_N_length, N_CA_C_angle, N_CA_C_O_diangle)
+
+        refAtoms = {"N":  Atom("N", n_coord, 0.0, 0.0, " ", "N", 0, "N"),
+                    "CA": CA,
+                    "C":  C,
+                    "O":  O}
+    else:
+        raise AssertionError("Cannot append to residue \"%s\"." % resn)
+    
+    return resRef, refAtoms
 
 
 def add_residue_from_geo(structure: Structure, geo: Geo) -> Structure:
@@ -1304,7 +1666,7 @@ def add_residue_from_geo(structure: Structure, geo: Geo) -> Structure:
 
     This function is a helper function and should not normally be called
     directly. Call add_residue() instead."""
-    resRef = getReferenceResidue(structure)
+    resRef, refAtoms = getReferenceResidue(structure)
     AA = geo.residue_name
     segID = resRef.get_id()[1]
     segID += 1
@@ -1323,16 +1685,16 @@ def add_residue_from_geo(structure: Structure, geo: Geo) -> Structure:
     omega = geo.omega
 
     N_coord = calculateCoordinates(
-        resRef["N"], resRef["CA"], resRef["C"], peptide_bond, CA_C_N_angle, psi_im1
+        refAtoms["N"], refAtoms["CA"], refAtoms["C"], peptide_bond, CA_C_N_angle, psi_im1
     )
     N = Atom("N", N_coord, 0.0, 1.0, " ", " N", 0, "N")
 
     CA_coord = calculateCoordinates(
-        resRef["CA"], resRef["C"], N, CA_N_length, C_N_CA_angle, omega
+        refAtoms["CA"], refAtoms["C"], N, CA_N_length, C_N_CA_angle, omega
     )
     CA = Atom("CA", CA_coord, 0.0, 1.0, " ", " CA", 0, "C")
 
-    C_coord = calculateCoordinates(resRef["C"], N, CA, CA_C_length, N_CA_C_angle, phi)
+    C_coord = calculateCoordinates(refAtoms["C"], N, CA, CA_C_length, N_CA_C_angle, phi)
     C = Atom("C", C_coord, 0.0, 1.0, " ", " C", 0, "C")
 
     ##Create Carbonyl atom (to be moved later)
@@ -1349,7 +1711,7 @@ def add_residue_from_geo(structure: Structure, geo: Geo) -> Structure:
 
     resRef["O"].set_coord(
         calculateCoordinates(
-            res["N"], resRef["CA"], resRef["C"], C_O_length, CA_C_O_angle, 180.0
+            res["N"], refAtoms["CA"], refAtoms["C"], C_O_length, CA_C_O_angle, 180.0
         )
     )
 
@@ -1455,21 +1817,17 @@ def make_structure_from_geos(geos: List[Geo]) -> Structure:
 def add_terminal_OXT(structure: Structure, C_OXT_length: float = 1.23) -> Structure:
     """Adds a terminal oxygen atom ('OXT') to the last residue of chain A model 0 of the given structure, and returns the new structure. The OXT atom object will be contained in the last residue object of the structure.
 
-This function should be used only when the structure object is completed and no further residues need to be appended."""
+    This function should be used only when the structure object is completed and no further residues need to be appended."""
 
     rad = 180.0 / math.pi
 
     # obtain last residue infomation
-    resRef = getReferenceResidue(structure)
-    N_resRef = resRef["N"]
-    CA_resRef = resRef["CA"]
-    C_resRef = resRef["C"]
-    O_resRef = resRef["O"]
+    resRef,refAtoms = getReferenceResidue(structure)
 
-    n_vec = N_resRef.get_vector()
-    ca_vec = CA_resRef.get_vector()
-    c_vec = C_resRef.get_vector()
-    o_vec = O_resRef.get_vector()
+    n_vec  = refAtoms["N"].get_vector()
+    ca_vec = refAtoms["CA"].get_vector()
+    c_vec  = refAtoms["C"].get_vector()
+    o_vec  = refAtoms["O"].get_vector()
 
     # geometry to bring together residue
     CA_C_OXT_angle = calc_angle(ca_vec, c_vec, o_vec) * rad
@@ -1480,10 +1838,100 @@ This function should be used only when the structure object is completed and no 
 
     # OXT atom creation
     OXT_coord = calculateCoordinates(
-        N_resRef, CA_resRef, C_resRef, C_OXT_length, CA_C_OXT_angle, N_CA_C_OXT_diangle
+        refAtoms["N"], refAtoms["CA"], refAtoms["C"], C_OXT_length, CA_C_OXT_angle, N_CA_C_OXT_diangle
     )
     OXT = Atom("OXT", OXT_coord, 0.0, 1.0, " ", "OXT", 0, "O")
 
     # modify last residue of the structure to contain the OXT atom
     resRef.add(OXT)
+    return structure
+
+
+def add_terminal_NME(structure: Structure) -> Structure:
+    """ Adds a terminal oxygen atom ('OXT') to the last residue of chain A 
+    model 0 of the given structure, and returns the new structure. The OXT 
+    atom object will be contained in the last residue object of the structure.
+
+    This function should be used only when the structure object is completed 
+    and no further residues need to be appended. 
+    """
+    # Load template for angles and bond lengths
+    geo = NMEGeo()
+
+    # Obtain last residue infomation
+    resRef,refAtoms = getReferenceResidue(structure)
+    segID =  resRef.get_id()[1]
+    segID += 1
+    
+    # geometry to bring together residue
+    peptide_bond = geo.peptide_bond
+    CA_N_length  = geo.CA_N_length
+    CA_C_N_angle = geo.CA_C_N_angle
+    C_N_CA_angle = geo.C_N_CA_angle
+    psi_im1      = geo.psi_im1
+    omega        = geo.omega
+    
+    # Calculate atoms coordinates
+    N_coord = calculateCoordinates(
+        refAtoms["N"], refAtoms["CA"], refAtoms["C"], peptide_bond, CA_C_N_angle, psi_im1)
+    N = Atom("N", N_coord, 0.0, 1.0, " ", " N", 0, "N")
+    
+    CT_coord = calculateCoordinates(
+        refAtoms["CA"], refAtoms["C"], N, CA_N_length, C_N_CA_angle, omega)
+    CT = Atom("CH3", CT_coord, 0.0, 1.0, " ", "CH3", 0, "C")
+    
+    res = makeNME(segID, N, CT)
+    
+    # Fix last Carbonyl-O
+    C_O_length = geo.C_O_length
+    CA_C_O_angle = geo.CA_C_O_angle
+    resRef["O"].set_coord(
+        calculateCoordinates(
+            res["N"], refAtoms["CA"], refAtoms["C"], C_O_length, CA_C_O_angle, 180.0
+        )
+    )
+    
+    structure[0]["A"].add(res)
+    return structure
+
+
+def add_terminal_NH2(structure: Structure) -> Structure:
+    """ Adds a terminal oxygen atom ('OXT') to the last residue of chain A
+    model 0 of the given structure, and returns the new structure. The OXT
+    atom object will be contained in the last residue object of the structure.
+
+    This function should be used only when the structure object is completed
+    and no further residues need to be appended.
+    """
+    # Load template for angles and bond lengths
+    geo = NMEGeo()
+
+    # Obtain last residue infomation
+    resRef,refAtoms = getReferenceResidue(structure)
+    segID =  resRef.get_id()[1]
+    segID += 1
+
+    # geometry to bring together residue
+    peptide_bond = geo.peptide_bond
+    CA_C_N_angle = geo.CA_C_N_angle
+    psi_im1      = geo.psi_im1
+    omega        = geo.omega
+
+    # Calculate atoms coordinates
+    N_coord = calculateCoordinates(
+        refAtoms["N"], refAtoms["CA"], refAtoms["C"], peptide_bond, CA_C_N_angle, psi_im1)
+    N = Atom("N", N_coord, 0.0, 1.0, " ", " N", 0, "N")
+
+    res = makeNH2(segID, N)
+
+    # Fix last Carbonyl-O
+    C_O_length = geo.C_O_length
+    CA_C_O_angle = geo.CA_C_O_angle
+    resRef["O"].set_coord(
+        calculateCoordinates(
+            res["N"], refAtoms["CA"], refAtoms["C"], C_O_length, CA_C_O_angle, 180.0
+        )
+    )
+
+    structure[0]["A"].add(res)
     return structure
