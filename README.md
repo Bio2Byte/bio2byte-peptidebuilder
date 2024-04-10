@@ -1,27 +1,72 @@
-# PeptideBuilder: A simple Python library to generate model peptides.
+# Bio2byte :: PeptideBuilder
 
-*Matthew Z. Tien, Dariya K. Sydykova, Austin G. Meyer, and Claus O. Wilke*
-
-[![PyPI version](https://badge.fury.io/py/PeptideBuilder.svg)](https://badge.fury.io/py/PeptideBuilder)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/PeptideBuilder)
-![PyPI - License](https://img.shields.io/pypi/l/PeptideBuilder)
-[![Build Status](https://travis-ci.org/clauswilke/PeptideBuilder.svg?branch=master)](https://travis-ci.org/clauswilke/PeptideBuilder)
-[![Coverage Status](https://img.shields.io/codecov/c/github/clauswilke/PeptideBuilder/master.svg)](https://codecov.io/github/clauswilke/PeptideBuilder?branch=master)
+This repository is a fork of **PeptideBuilder: A simple Python library to generate model peptides**
+by *Matthew Z. Tien*, *Dariya K. Sydykova*, *Austin G. Meyer*, and *Claus O. Wilke*.
 
 ## Installation
 
-You can install PeptideBuilder with pip:
+You can install bio2byte-peptidebuilder directly from GitHub:
+
+```sh
+# Create a virtual environment (optional)
+python -m venv peptidebuilder
+source peptidebuilder/bin/activate
+
+# Install directly from GitHub
+pip install git+https://github.com/Bio2Byte/bio2byte-peptidebuilder
 ```
-pip install PeptideBuilder
+
+## Usage
+
+A simple example is shown below. Other examples can be found in the `examples/` folder.
+
+```python
+# Import the library
+from Bio.PDB import PDBIO
+import bio2byte.PeptideBuilder as PeptideBuilder
+from bio2byte.PeptideBuilder import Geometry
+
+# Dihedral angles for an alpha-helix
+helix_phipsi = (-60., -40.)
+
+# Sequence (case insensitive)
+sequence = "LYS-GLY-GLU-ARG-GLN-SEP-ALA-VAL-ASP-ILE-ASP".split("-")
+
+# Build an alpha-helical peptide with N-terminal acetyl and
+# C-terminal N-methyl capping groups
+structure = PeptideBuilder.initialize_ACE()
+for res in sequence:
+    geo = Geometry.geometry(res)
+    geo.phi, geo.psi_im1 = helix_phipsi
+    PeptideBuilder.add_residue(structure, geo)
+PeptideBuilder.add_terminal_NME(structure)
+
+# Write to PDB file
+pdbwriter = PDBIO()
+pdbwriter.set_structure(structure)
+pdbwriter.save("peptide.pdb")
 ```
-PeptideBuilder has one required dependency: [Biopython](https://pypi.org/project/biopython/)
 
+## Added features
 
-## Examples
+### Version 1.2.0
 
-For example usage, we encourage you to checkout the scripts in the `examples` folder and in the `tests` folder. The `examples` folder contains two scripts showing typical usage. The script `simpleExample.py` is a brief example script demonstrating basic use of the PeptideBuilder library. The script `evaluation.py` reproduces the results presented in Table 1 of Tien et al. (2013).
-
-The file `test_PeptideBuilder.py` in `tests` contains extensive tests for the various functions provided by this library and may also be useful if you're looking for example usage.
+* Include new residue geometries
+    * SEP (phosphoserine)
+    * TPO (phosphothreonine)
+    * PTR (phosphotyrosine)
+* Include new initialization/termination residues
+    * ACE (N-terminal acetyl group)
+    * NME (C-terminal *N*-methyl group)
+    * NH2 (C-terminal amide group)
+* Allow three-letter residue names in `geometry` funtion
+* Allow alternative residue names for protonation states:
+    * ASH (neutral aspartatic acid)
+    * GLH (neutral glutamic acis)
+    * HIP (protonated histidine)
+    * S1P (protonated phosphoserine, net charge = -1)
+    * T1P (protonated phosphothreonine, net charge = -1)
+    * Y1P (protonated phosphotyrosine, net charge = -1)
 
 ## Misc
 
@@ -31,21 +76,9 @@ https://github.com/clauswilke/PeptideBuilder.
 
 To test whether your installation works properly, run `pytest` in the top-level project folder.
 
-## Contributing
+## Reference
 
-Pull requests are welcome on GitHub. However, to be accepted, contributions must:
-1. Be styled with [`black`](https://black.readthedocs.io/en/stable/)
-2. Be linted with `pylint`
-3. Be type-checked with `mypy`
-4. Pass the `pytest` unit tests
+Please cite the original package:
 
-Thus, before contributing code make sure the following commands exit without errors when run from the root directory of the Peptide Builder project:
-
-- `pytest`
-- `black .`
-- `mypy PeptideBuilder/`
-- `pylint --rcfile=setup.cfg PeptideBuilder/`
-
-**Reference:**
-M. Z. Tien, D. K. Sydykova, A. G. Meyer, C. O. Wilke (2013). PeptideBuilder:
-A simple Python library to generate model peptides. PeerJ 1:e80.
+> M. Z. Tien, D. K. Sydykova, A. G. Meyer, C. O. Wilke (2013). PeptideBuilder:
+> A simple Python library to generate model peptides. PeerJ 1:e80.

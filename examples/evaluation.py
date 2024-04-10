@@ -6,9 +6,8 @@ from Bio.PDB import PDBParser
 from Bio.PDB import Superimposer
 from Bio.PDB.vectors import calc_angle, calc_dihedral
 
-from PeptideBuilder import Geometry
-import PeptideBuilder
-
+import bio2byte.PeptideBuilder as PeptideBuilder
+from bio2byte.PeptideBuilder import Geometry
 
 resdict = {
     "ALA": "A",
